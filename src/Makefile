@@ -1,5 +1,5 @@
 kernel.img: boot.zen
-	zen build-exe boot.zen -target armv6-freestanding-eabihf --linker-script rpi.ld
+	zen build-exe boot.zen -target armv6-freestanding-eabihf --linker-script rpi-qemu.ld
 	arm-none-eabi-objcopy -O binary boot kernel.img
 
 

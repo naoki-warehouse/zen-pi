@@ -20,7 +20,7 @@ fn main() void {
     uart0.init();
     const write = std.io.write(uart.uart0.WriteError);
 
-    try write.print(uart0, "Starting ZenPi...\n");
+    try write.print(uart0, "\nStarting ZenPi...\n");
     try write.print(uart0, "{}", msg);
     while (true) {
         const c = uart0.getc();
