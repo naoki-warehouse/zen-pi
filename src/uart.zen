@@ -1,0 +1,59 @@
+pub const uart0 = packed struct {
+    DR: u32,
+    RSRECR: u32,
+    reserved1: u128,
+    FR: u32,
+    reserved2: u32,
+    ILPR: u32,
+    IBRD: u32,
+    FBRD: u32,
+    LCRH: u32,
+    CR: u32,
+    IFLS: u32,
+    IMSC: u32,
+    RIS: u32,
+    MIS: u32,
+    ICR: u32,
+    DMACR: u32,
+
+    pub const UART0_BASE_ADDRESS = 0x101f1000;
+
+    fn init(self: *uart0) void {
+        self.CR = 0;
+        self.IBRD = 1;
+        self.FBRD = 40;
+        self.LCRH = 0x70;
+        self.CR = 0x0301;
+    }
+
+    fn putc(self: *uart0, c: u8) void {
+        var is_tx_rdy = (self.FR & (1 << 5)) != (1 << 5);
+        while (!is_tx_rdy) {
+            is_tx_rdy = (self.FR & (1 << 5)) != (1 << 5);
+        }
+        var uart = @intToPtr(*uart0, UART0_BASE_ADDRESS);
+        uart.DR = c;
+    }
+
+    fn getc(self: uart0) u8 {
+        var is_rx_rdy = (self.FR & (1 << 4)) != (1 << 4);
+
+        while (!is_rx_rdy) {
+            is_rx_rdy = (self.FR & (1 << 4)) != (1 << 4);
+        }
+        return @intCast(u8, self.DR & 0xFF);
+    }
+
+    fn print(self: *uart0, str: []const u8) void {
+        for (str) |c| {
+            self.putc(c);
+        }
+    }
+
+    pub const WriteError = error{};
+    pub fn write(self: *uart0, buf: []const u8) WriteError!void {
+        for (buf) |byte| {
+            self.putc(byte);
+        }
+    }
+};

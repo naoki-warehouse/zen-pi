@@ -1,0 +1,29 @@
+const uart = @import("uart.zen");
+const std = @import("std");
+
+export fn startup() linksection(".startup") noreturn {
+    asm volatile ("mov sp, 0x10000"
+    );
+    asm volatile ("bl _start"
+    );
+    while (true) {}
+}
+
+export fn _start() noreturn {
+    main();
+    while (true) {}
+}
+
+fn main() void {
+    const msg = "--Echo back test --\r\n";
+    var uart0 = @intToPtr(*uart.uart0, uart.uart0.UART0_BASE_ADDRESS);
+    uart0.init();
+    const write = std.io.write(uart.uart0.WriteError);
+
+    try write.print(uart0, "Starting ZenPi...\n");
+    try write.print(uart0, "{}", msg);
+    while (true) {
+        const c = uart0.getc();
+        uart0.putc(c);
+    }
+}
